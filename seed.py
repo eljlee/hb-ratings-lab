@@ -44,7 +44,7 @@ def load_movies():
 
     for row in open("seed_data/u.item"):
         row = row.rstrip()
-        movie_id, title, released_str, imdb_url = row.split("|")[:4]
+        movie_id, title, released_str, junk, imdb_url = row.split("|")[:5]
         title = title[:-7]
 
         if released_str:
@@ -70,16 +70,15 @@ def load_ratings():
 
     Rating.query.delete()
 
-    rating_id = 0
+    # rating_id = 0
 
     for row in open("seed_data/u.data"):
         row = row.rstrip()
 
         user_id, movie_id, score = row.split("\t")[:3]
-        rating_id += 1
+        # rating_id += 1
 
-        rating = Rating(rating_id=rating_id,
-                        user_id=user_id,
+        rating = Rating(user_id=user_id,
                         movie_id=movie_id,
                         score=score)
 
