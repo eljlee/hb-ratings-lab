@@ -25,12 +25,45 @@ def index():
     """Homepage."""
     return render_template('homepage.html')
 
+
 @app.route('/users')
 def user_list():
     """Show list of users."""
 
     users = User.query.all()
     return render_template('user_list.html', users=users)
+
+
+@app.route('/registration-form')
+def show_reg_form():
+    """Displays registration form."""
+
+    return render_template('registration_form.html')
+
+
+@app.route('/new-user', methods=["POST"])
+def validate_user():
+    """Checks if user is already registered, if not, register new user."""
+
+    # import pdb; pdb.set_trace()
+
+    email = request.form.get("new_user_email")
+    password = request.form.get("new_user_password")
+
+    validation_entry = User.query.filter(User.email == email).first()
+
+    if validation_entry is None:
+        email = User(email=email, password=password)
+        db.session.add(email)
+        db.session.commit()
+
+        flash("Successfully registered!")
+        return render_template('registration-confirmation.html',
+                               user=email)
+
+    else:
+        flash("Sorry, that email is already in use.")
+        return redirect('/registration-form')
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the
