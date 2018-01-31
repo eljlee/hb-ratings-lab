@@ -39,11 +39,29 @@ def show_profile(user_id):
     """Shows user's profile page."""
 
     user = User.query.filter(User.user_id == user_id).first()
-    rating_scores = Rating.query.filter(Rating.user_id == user_id).all()
-
+    # optimize querying later with joinedload
     return render_template('user_profile.html',
-                           user=user,
-                           rating_scores=rating_scores)
+                           user=user)
+
+
+@app.route('/movies')
+def movie_list():
+    """Show list of movies."""
+
+    movies = Movie.query.order_by(Movie.title).all()
+
+    return render_template('movie_list.html',
+                           movies=movies)
+
+
+@app.route('/movies/<movie_id>')
+def show_movie_profile(movie_id):
+    """Shows detailed information about a movie."""
+
+    movie = Movie.query.filter(Movie.movie_id == movie_id).first()
+
+    return render_template('movie_profile.html',
+                           movie=movie)
 
 
 @app.route('/registration-form')
@@ -63,8 +81,8 @@ def validate_user():
     validation_entry = User.query.filter(User.email == email).first()
 
     if validation_entry is None:
-        email = User(email=email, password=password)
-        db.session.add(email)
+        new_user = User(email=email, password=password)
+        db.session.add(new_user)
         db.session.commit()
 
         flash("Successfully registered!")
@@ -79,7 +97,7 @@ def validate_user():
 def show_login():
     """Shows user the login form."""
 
-    return render_template("login_form.html")
+    return render_template('login_form.html')
 
 
 @app.route('/login', methods=["POST"])
@@ -94,7 +112,11 @@ def login():
     if valid_info.email == email and valid_info.password == password:
         session['user_id'] = request.form.get('user_email')
         flash("Successfully logged in.")
-        return redirect('/')
+
+        # stringify the id from valid_info object to be used in URL
+        user_id = str(valid_info.user_id)
+
+        return redirect('/users/'+user_id)
 
     else:
         flash("Sorry, incorrect login info.")
