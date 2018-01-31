@@ -45,8 +45,6 @@ def show_reg_form():
 def validate_user():
     """Checks if user is already registered, if not, register new user."""
 
-    # import pdb; pdb.set_trace()
-
     email = request.form.get("new_user_email")
     password = request.form.get("new_user_password")
 
@@ -58,12 +56,47 @@ def validate_user():
         db.session.commit()
 
         flash("Successfully registered!")
-        return render_template('registration-confirmation.html',
-                               user=email)
+        return redirect('/')
 
     else:
         flash("Sorry, that email is already in use.")
         return redirect('/registration-form')
+
+
+@app.route('/login')
+def show_login():
+    """Shows user the login form."""
+
+    return render_template("login_form.html")
+
+
+@app.route('/login', methods=["POST"])
+def login():
+    """Checks if user enters valid login info."""
+
+    email = request.form.get('user_email')
+    password = request.form.get('user_password')
+
+    valid_info = User.query.filter(User.email == email).first()
+
+    if valid_info.email == email and valid_info.password == password:
+        session['user_id'] = request.form.get('user_email')
+        flash("Successfully logged in.")
+        return redirect('/')
+
+    else:
+        flash("Sorry, incorrect login info.")
+        return redirect('/login')
+
+
+@app.route('/logout')
+def logout():
+    """Logs user out of website."""
+
+    session.clear()
+    flash("You have logged out.")
+    return redirect('/')
+
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the
