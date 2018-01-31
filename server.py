@@ -34,6 +34,18 @@ def user_list():
     return render_template('user_list.html', users=users)
 
 
+@app.route('/users/<user_id>')
+def show_profile(user_id):
+    """Shows user's profile page."""
+
+    user = User.query.filter(User.user_id == user_id).first()
+    rating_scores = Rating.query.filter(Rating.user_id == user_id).all()
+
+    return render_template('user_profile.html',
+                           user=user,
+                           rating_scores=rating_scores)
+
+
 @app.route('/registration-form')
 def show_reg_form():
     """Displays registration form."""
