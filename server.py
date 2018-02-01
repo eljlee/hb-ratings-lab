@@ -44,7 +44,6 @@ def show_profile(user_id):
                            user=user)
 
 
-
 @app.route('/registration-form')
 def show_reg_form():
     """Displays registration form."""
@@ -141,12 +140,12 @@ def login():
     email = request.form.get('user_email')
     password = request.form.get('user_password')
 
-    user = User.query.filter(User.email == email).first()
+    user = User.query.filter(User.email == email).first()  # returns a user obj
 
     if user is not None and user.password == password:
 
         #hold user_id in session
-        session['user_id'] = user.user_id
+        session['user_id'] = user.user_id  # this works because user is an obj
         flash("Successfully logged in.")
 
         return redirect('/users/{id}'.format(id=user.user_id))
