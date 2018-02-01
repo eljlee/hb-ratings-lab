@@ -1,6 +1,7 @@
 """Models and database functions for Ratings project."""
 
 from flask_sqlalchemy import SQLAlchemy
+import correlation
 # from datetime import datetime
 
 # This is the connection to the PostgreSQL database; we're getting this through
@@ -53,7 +54,7 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     score = db.Column(db.Integer, nullable=False)
 
-    user = db.relationship("User",
+    user = db.relationship("  ",
                            backref=db.backref("ratings",
                                               order_by=rating_id))
 

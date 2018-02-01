@@ -103,11 +103,16 @@ def update_rating(movie_id):
 
     movie = Movie.query.filter(Movie.movie_id == movie_id).first()
 
+    # import pdb; pdb.set_trace()
+
     if 'user_id' in session:
         user_id = session['user_id']
         # Check if rating exists for this user and this movie
-        rating = Rating.query.filter(Rating.user_id == user_id and
-                                     Rating.movie_id == movie_id).first()
+        rating = Rating.query.filter(Rating.movie_id == movie_id,
+                                     Rating.user_id == user_id).first()
+
+        # it's only getting the first query right
+        # if movie_id first, it's correct; and vice-versa...
 
         if rating:
             rating.score = score
@@ -115,15 +120,19 @@ def update_rating(movie_id):
             flash("Your movie rating has been updated.")
 
         else:
-            new_rating = Rating(user_id=user_id,
-                                movie_id=movie_id,
+            new_rating = Rating(movie_id=movie_id,
+                                user_id=user_id,
                                 score=score)
             db.session.add(new_rating)
             db.session.commit()
             #New_rating object at movie table, grab title
             flash("Thanks for rating {}!".format(new_rating.movie.title))
 
-    return render_template('movie_profile.html', movie=movie)
+        return render_template('movie_profile.html', movie=movie)
+
+    else:
+        flash("Please log in first.")
+        return redirect('/login')
 
 
 @app.route('/login')
