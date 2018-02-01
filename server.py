@@ -45,7 +45,6 @@ def show_profile(user_id):
 
 
 
-
 @app.route('/registration-form')
 def show_reg_form():
     """Displays registration form."""
@@ -95,37 +94,37 @@ def show_movie_profile(movie_id):
                            movie=movie)
 
 
-# @app.route('/movies/<movie_id>', methods=["POST"])
-# def update_rating(movie_id):
-#     """Allows user to add or edit a rating for current movie."""
+@app.route('/rate/<movie_id>', methods=["POST"])
+def update_rating(movie_id):
+    """Allows user to add or edit a rating for current movie."""
 
-#     # user's rating needs to check database by user_email if user has
-#     # rated this movie
-#     if session.get(user_id) is not None:
-#         user_email = session['user_id']
-#         user = Rating.query.filter(User.email == user_email).first()
+    # user's rating needs to check database by user_email if user has
+    # rated this movie
+    score = request.form.get('score')
 
-#         # if user has a movie rating at movie_id
+    movie = Movie.query.filter(Movie.movie_id == movie_id).first()
 
-#             # give option to update rating
-#             rating_by_user = Rating.query.filter(User.email == user_email).one()
-#             rating_by_user.score = request.form.get('')
-#             db.session.commit()
+    if 'user_id' in session:
+        user_id = session['user_id']
+        # Check if rating exists for this user and this movie
+        rating = Rating.query.filter(Rating.user_id == user_id and
+                                     Rating.movie_id == movie_id).first()
 
-#         # if user does NOT have a rating for said movie (in URL)
-#             # give option to add rating
-#             # rating_id - autoincrement
-#             # user_id - grab by email from session
-#             # movie_id - grab from url
-#             # score - grab from form
-#             new_rating = Rating(user_id=user_id,
-#                                 movie_id=movie_id,
-#                                 score=score)
-#             db.session.add(new_rating)
-#             db.session.commit()
+        if rating:
+            rating.score = score
+            db.session.commit()
+            flash("Your movie rating has been updated.")
 
+        else:
+            new_rating = Rating(user_id=user_id,
+                                movie_id=movie_id,
+                                score=score)
+            db.session.add(new_rating)
+            db.session.commit()
+            #New_rating object at movie table, grab title
+            flash("Thanks for rating {}!".format(new_rating.movie.title))
 
-#     return redirect('/movies/<movie_id>')
+    return render_template('movie_profile.html', movie=movie)
 
 
 @app.route('/login')
@@ -142,16 +141,15 @@ def login():
     email = request.form.get('user_email')
     password = request.form.get('user_password')
 
-    valid_info = User.query.filter(User.email == email).first()
+    user = User.query.filter(User.email == email).first()
 
-    if valid_info.email == email and valid_info.password == password:
-        session['user_id'] = request.form.get('user_email')
+    if user is not None and user.password == password:
+
+        #hold user_id in session
+        session['user_id'] = user.user_id
         flash("Successfully logged in.")
 
-        # stringify the id from valid_info object to be used in URL
-        user_id = str(valid_info.user_id)
-
-        return redirect('/users/'+user_id)
+        return redirect('/users/{id}'.format(id=user.user_id))
 
     else:
         flash("Sorry, incorrect login info.")
